@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: datalake-demo
+server:
+  port:  9337
