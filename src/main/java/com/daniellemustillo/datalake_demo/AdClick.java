@@ -9,7 +9,7 @@ public class AdClick {
     private String eventId;
     private String userId;
 	private String adId;
-	private String campaign_id;
+	private String campaignId;
     private String country;
 	private String device;
 	private String eventTime;
