@@ -9,5 +9,5 @@ curl --location 'http://localhost:9337/click' \
     "campaignId": "campaign123",
     "country": "CA",
     "device": "mobile",
-    "eventTime": "1234567"
+    "eventTime": "2026-05-01T10:00:00Z"
 }'
