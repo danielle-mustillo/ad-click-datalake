@@ -14,6 +14,19 @@ public class AdClick {
 	private String device;
 	private String eventTime;
 
+    public AdClick() {
+    }
+
+    public AdClick(String eventId, String userId, String adId, String campaignId, String country, String device, String eventTime) {
+        this.eventId = eventId;
+        this.userId = userId;
+        this.adId = adId;
+        this.campaignId = campaignId;
+        this.country = country;
+        this.device = device;
+        this.eventTime = eventTime;
+    }
+
     public String getEventId() {
 		return eventId;
 	}
@@ -33,10 +46,10 @@ public class AdClick {
 		this.adId = adId;
 	}
     public String getCampaign_id() {
-		return campaign_id;
+		return campaignId;
 	}
 	public void setCampaign_id(String campaign_id) {
-		this.campaign_id = campaign_id;
+		this.campaignId = campaign_id;
 	}
 	public String getCountry() {
 		return country;

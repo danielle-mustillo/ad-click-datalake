@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @RestController
 public class AdClickController {
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, AdClick> kafkaTemplate;
 
     @Value(value = "${spring.kafka.ad-click-topic}")
     private String adClicks;
@@ -31,8 +31,8 @@ public class AdClickController {
     @ResponseStatus(value = HttpStatus.ACCEPTED)
     public String ad_click(@RequestBody AdClick adClick) {
         // TODO move this to a service class ad-clicks
-        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(adClicks, adClick.toString());
-        // TODO tostring isn't right
+
+        CompletableFuture<SendResult<String, AdClick>> future = kafkaTemplate.send(adClicks, adClick);
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {

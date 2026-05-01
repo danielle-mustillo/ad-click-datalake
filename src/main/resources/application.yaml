@@ -4,5 +4,5 @@ spring:
 server:
   port:  9337
 spring.kafka:
-  bootstrap-servers: localhost:9093
+  bootstrap-servers: localhost:9092
 spring.kafka.ad-click-topic: ad-clicks
