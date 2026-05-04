@@ -6,6 +6,7 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.types.StructField;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 
@@ -14,6 +15,7 @@ import static org.apache.spark.sql.types.DataTypes.*;
 
 
 @Component
+@Profile("!test")
 public class KafkaToSilverClicksJob {
     private final SparkSession spark;
     

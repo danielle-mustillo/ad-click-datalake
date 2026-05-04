@@ -5,11 +5,13 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import static org.apache.spark.sql.functions.*;
 
 @Component
+@Profile("!test")
 public class KafkaToBronzeClicksJob {
     
     private final SparkSession spark;
