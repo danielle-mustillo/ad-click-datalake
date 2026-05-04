@@ -55,11 +55,11 @@ public class AdClick {
 	public void setAdId(String adId) {
 		this.adId = adId;
 	}
-    public String getCampaign_id() {
+    public String getCampaignId() {
 		return campaignId;
 	}
-	public void setCampaign_id(String campaign_id) {
-		this.campaignId = campaign_id;
+	public void setCampaignId(String campaignId) {
+		this.campaignId = campaignId;
 	}
 	public String getCountry() {
 		return country;

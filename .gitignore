@@ -33,3 +33,5 @@ build/
 .vscode/
 .venv
 .mvn
+
+data/
