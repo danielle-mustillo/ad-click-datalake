@@ -13,11 +13,12 @@ public class AdClick {
     private String country;
 	private String device;
 	private String eventTime;
+    private String cost;
 
     public AdClick() {
     }
 
-    public AdClick(String eventId, String userId, String adId, String campaignId, String country, String device, String eventTime) {
+    public AdClick(String eventId, String userId, String adId, String campaignId, String country, String device, String eventTime, String cost) {
         this.eventId = eventId;
         this.userId = userId;
         this.adId = adId;
@@ -25,6 +26,15 @@ public class AdClick {
         this.country = country;
         this.device = device;
         this.eventTime = eventTime;
+        this.cost = cost;
+    }
+
+    public String getCost() {
+        return cost;
+    }
+
+    public void setCost(String cost) {
+        this.cost = cost;
     }
 
     public String getEventId() {

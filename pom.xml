@@ -27,8 +27,9 @@
 		<url/>
 	</scm>
 	<properties>
-    <java.version>21</java.version>
-    <maven.compiler.release>21</maven.compiler.release>
+        <java.version>21</java.version>
+        <maven.compiler.release>21</maven.compiler.release>
+        <spark.version>3.5.8</spark.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -52,6 +53,29 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.12</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql-kafka-0-10_2.12</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+           <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.23.0</version>
+            <!-- <scope>test</scope> -->
+        </dependency>
+            <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.23.0</version> <!-- Use latest version, requires Java 11+ -->
+            <!-- <scope>test</scope> -->
         </dependency>
     </dependencies>
 
