@@ -2,7 +2,7 @@ spring:
   application:
     name: datalake-demo
 server:
-  port:  9337
+  port:  1337
 spring.kafka:
   bootstrap-servers: localhost:9092
 spring.kafka.ad-click-topic: ad-clicks

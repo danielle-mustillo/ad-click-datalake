@@ -61,7 +61,29 @@ public class KafkaToDataLakePipelines {
     
 
     public StreamingQuery kafkaToSilver() throws Exception {
-        var schema = createStructType(new StructField[]{
+        spark.sql("""
+                    CREATE NAMESPACE IF NOT EXISTS local.lake
+                """);
+
+        spark.sql("""
+                    CREATE TABLE IF NOT EXISTS local.lake.silver_clicks (
+                        eventId STRING,
+                        userId STRING,
+                        adId STRING,
+                        campaignId STRING,
+                        country STRING,
+                        device STRING,
+                        eventTime STRING,
+                        cost STRING,
+                        clickTS TIMESTAMP,
+                        clickDate DATE,
+                        revenue DOUBLE 
+                    )
+                    USING iceberg
+                    PARTITIONED BY (clickDate)
+                """);
+
+        var schema = createStructType(new StructField[] {
             createStructField("eventId", StringType, false),
             createStructField("userId", StringType, true),
             createStructField("adId", StringType, true),
@@ -71,13 +93,16 @@ public class KafkaToDataLakePipelines {
             createStructField("eventTime", StringType, false),
             createStructField("cost", StringType, true)
         });
-
+        
+        // Apache Iceberg
         Dataset<Row> kafka = spark.readStream()
                 .format("kafka")
                 .option("kafka.bootstrap.servers", bootstrap)
                 .option("subscribe", topic)
                 .option("startingOffsets", "earliest")
                 .load();
+
+        // Apache Parquet
         // Dataset<Row> parsed = kafka
         //         .selectExpr("CAST(value AS STRING) as raw_json");
 
@@ -97,26 +122,55 @@ public class KafkaToDataLakePipelines {
         //         .format("console")
         //         .option("truncate", "false")
         //         .start();
+        
+
+        // Apache Parquet
+        // return parsed.writeStream()
+        //     .format("parquet")
+        //     .trigger(Trigger.ProcessingTime("10 seconds")) // Silver is semi-batched
+        //     .option("path", "data/silver/clicks")
+        //     .option("checkpointLocation", "data/checkpoints/kafka-to-silver-clicks")
+        //     .partitionBy("clickDate")
+        //     .outputMode("append")
+        //     .start();
+        //
+        // Apache Iceberg (schema)
         return parsed.writeStream()
-            .format("parquet")
-            .trigger(Trigger.ProcessingTime("10 seconds")) // Silver is semi-batched
-            .option("path", "data/silver/clicks")
-            .option("checkpointLocation", "data/checkpoints/kafka-to-silver-clicks")
-            .partitionBy("clickDate")
+            .queryName("kafka-to-silver-clicks")
+            .trigger(Trigger.ProcessingTime("15 seconds"))
+            .format("iceberg")
             .outputMode("append")
-            .start();
+            .option("checkpointLocation", "data/checkpoints/kafka-to-silver-clicks-iceberg")
+            .toTable("local.lake.silver_clicks");
         
     }
     public void silverToGold() throws Exception {
-        Dataset<Row> clicks = spark.read()
-            .schema("eventId STRING, userId STRING, adId STRING, campaignId STRING, country STRING, device STRING, eventTime STRING, cost STRING, clickTS TIMESTAMP, clickDate DATE, revenue DOUBLE")
-            .parquet("data/silver/clicks");
-        
+        // Apache Parquet
+        // Dataset<Row> clicks = spark.read()
+        //     .schema("eventId STRING, userId STRING, adId STRING, campaignId STRING, country STRING, device STRING, eventTime STRING, cost STRING, clickTS TIMESTAMP, clickDate DATE, revenue DOUBLE")
+        //     .parquet("data/silver/clicks");
+        //
+        //
+
+        // Apache Iceberg
+        Dataset<Row> clicks = spark.table("local.lake.silver_clicks");
+        spark.sql("""
+                    CREATE TABLE IF NOT EXISTS local.lake.gold_campaign_five_minute_clicks (
+                        campaignId STRING,
+                        windowStart TIMESTAMP,
+                        windowEnd TIMESTAMP,
+                        clickCount BIGINT,
+                        totalRevenue DOUBLE
+                    )
+                    USING iceberg
+                """);
+
+
         System.out.println("read in silver:: ");
         clicks.show();
 
         // Dataset<Row> parsed = clicks
-        //         .selectExpr("CAST(value AS STRING) as raw_json");
+        // .selectExpr("CAST(value AS STRING) as raw_json");
         //
         // return parsed.write()
         //         .format("console")
@@ -127,24 +181,28 @@ public class KafkaToDataLakePipelines {
                     window(col("clickTS"), "5 minutes")
             )
             .agg(
-                count("*").alias("click_count"),
-                sum("revenue").alias("total_revenue")
+                count("*").alias("clickCount"),
+                sum("revenue").alias("totalRevenue")
             )
             .select(
                 col("campaignId"),
                 col("window.start").alias("windowStart"),
                 col("window.end").alias("windowEnd"),
-                col("click_count"),
-                col("total_revenue")
+                col("clickCount"),
+                col("totalRevenue")
         );
         System.out.println("output in gold:: ");
         gold.show();
-        
-        gold.write()
-            .mode("overwrite")
-            .option("checkpointLocation", "data/checkpoints/silver-to-gold-campaign-batch")
-            .parquet("data/gold/campaign_clicks_five_mins");
 
+        // Apache Parquet
+        // gold.write()
+        //     .mode("overwrite")
+        //     .option("checkpointLocation", "data/checkpoints/silver-to-gold-campaign-batch")
+        //     .parquet("data/gold/campaign_clicks_five_mins");
+
+        // Apache Iceberg
+        gold.writeTo("local.lake.gold_campaign_five_minute_clicks")
+            .overwritePartitions(); 
 
 
             //.outputMode("append")
@@ -153,19 +211,22 @@ public class KafkaToDataLakePipelines {
     }
 
     public void showGold() {
-        Dataset<Row> clicks = spark.read()
-            //.schema("campaignId STRING, windowStart INT96, windowEnd INT96, click_count INT, total_revenue DOUBLE")
-            .parquet("data/gold/campaign_clicks_five_mins");
-        clicks.show();
+        // Dataset<Row> clicks = spark.read()
+        //     .parquet("data/gold/campaign_clicks_five_mins");
+
+        Dataset<Row> clicks = spark.table("local.lake.gold_campaign_five_minute_clicks");
+        clicks.orderBy(col("windowStart").desc()).show();
     }
     public void showSilver() {
-        Dataset<Row> clicks = spark.read()
-            .parquet("data/silver/clicks");
-        clicks.show();
+        // Dataset<Row> clicks = spark.read()
+        //     .parquet("data/silver/clicks");
+        
+        Dataset<Row> clicks = spark.table("local.lake.silver_clicks");
+        clicks.orderBy(col("clickTS").desc()).show();
     }
     public void showBronze() {
         Dataset<Row> clicks = spark.read()
             .parquet("data/bronze/clicks");
-        clicks.show();
+        clicks.orderBy(col("offset").desc()).show();
     }
 }

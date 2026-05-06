@@ -1,6 +1,6 @@
 #!/bin/bash
 
-curl --location 'http://localhost:9337/click' \
+curl --location 'http://localhost:1337/click' \
 --header 'Content-Type: application/json' \
 --data '{
     "eventId": "123",
